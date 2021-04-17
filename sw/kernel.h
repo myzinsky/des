@@ -34,8 +34,7 @@ public:
         void await_resume() {}
     };
 
-    void registerAtomicProcess(std::function<void()> function, std::vector<signalInterface*> sensitivity);
-    void registerSuspendableProcess(std::function<coroutine()> function, std::vector<des::signalInterface*> sensitivity);
+    void registerProcess(std::function<void()> function, std::vector<signalInterface*> sensitivity);
     void updateRequest(signalInterface *sig);
     awaitable wait(uint64_t time);
     void startSimulation();

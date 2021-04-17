@@ -3,7 +3,7 @@
 #include <list>
 #include "signal.h"
 
-void des::kernel::registerAtomicProcess(std::function<void ()> function, std::vector<des::signalInterface*> sensitivity)
+void des::kernel::registerProcess(std::function<void()> function, std::vector<des::signalInterface*> sensitivity)
 {
     if(!sensitivity.empty()) {
         for(auto sig : sensitivity) {
@@ -11,11 +11,6 @@ void des::kernel::registerAtomicProcess(std::function<void ()> function, std::ve
         }
     }
 
-    processes.push_back(function);
-}
-
-void des::kernel::registerSuspendableProcess(std::function<coroutine ()> function, std::vector<des::signalInterface*> sensitivity)
-{
     processes.push_back(function);
 }
 

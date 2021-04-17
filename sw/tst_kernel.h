@@ -15,13 +15,13 @@ TEST(kernelTests, sensitivity)
     int foo = 0;
     des::signal<bool> a("a",true);
 
-    des::kernel::getInstance().registerAtomicProcess([&](){
+    des::kernel::getInstance().registerProcess([&](){
         std::cout << "PROCESS" << std::endl;
         foo++;
     },{&a});
 
     // Testbench:
-    des::kernel::getInstance().registerSuspendableProcess([&]() -> coroutine{
+    des::kernel::getInstance().registerProcess([&]() -> coroutine{
         co_await des::kernel::getInstance().wait(10);
         std::cout << "TB" << std::endl;
         a.write(false);
@@ -39,14 +39,14 @@ TEST(kernelTests, rsLatch)
     des::signal<bool> n("n",false);
 
     // Process:
-    des::kernel::getInstance().registerAtomicProcess([&](){
+    des::kernel::getInstance().registerProcess([&](){
         q.write(!(r.read() || n.read()));
         n.write(!(s.read() || q.read()));
         std::cout << "PROCESS" << std::endl;
     },{&r,&s,&q,&n});
 
     // Testbench:
-    des::kernel::getInstance().registerSuspendableProcess([&]() -> coroutine{
+    des::kernel::getInstance().registerProcess([&]() -> coroutine{
         co_await des::kernel::getInstance().wait(10);
         s.write(false);
         r.write(true);
