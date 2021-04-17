@@ -8,6 +8,10 @@
 #include <list>
 #include <experimental/coroutine>
 
+#include <string>
+#include <fstream>
+#include <iostream>
+
 #include "eventqueue.h"
 
 namespace des {
@@ -34,21 +38,32 @@ public:
         void await_resume() {}
     };
 
-    void registerProcess(std::function<void()> function, std::vector<signalInterface*> sensitivity);
+    void registerProcess(std::function<void()> function, std::vector<signalInterface*> sensitivity = {});
     void updateRequest(signalInterface *sig);
     awaitable wait(uint64_t time);
     void startSimulation();
+    void startSimulation(uint64_t time);
     void reset();
     uint64_t time();
+
+    // VCD Stuff:
+    void vcdInit(std::string file);
+    void vcdSignals();
+    void vcdSave();
+    bool vcdActive;
+    std::string vcd;
+    std::string vcdFile;
+    std::map<signalInterface*, char> vcdLut;
 
 private:
     eventQueue queue;
     uint64_t simulationTime;
     uint64_t delta;
+    bool stop;
+    uint64_t stopTime;
 
     kernel (){
-        simulationTime = 0;
-        delta = 0;
+        reset();
     };
 
     void debugSignals(std::string msg);

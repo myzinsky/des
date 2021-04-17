@@ -16,14 +16,12 @@ TEST(kernelTests, sensitivity)
     des::signal<bool> a("a",true);
 
     des::kernel::getInstance().registerProcess([&](){
-        std::cout << "PROCESS" << std::endl;
         foo++;
     },{&a});
 
     // Testbench:
     des::kernel::getInstance().registerProcess([&]() -> coroutine{
         co_await des::kernel::getInstance().wait(10);
-        std::cout << "TB" << std::endl;
         a.write(false);
     },{});
 
@@ -42,29 +40,23 @@ TEST(kernelTests, eventOrder) {
     des::kernel::getInstance().registerProcess([&]() -> coroutine{
         co_await des::kernel::getInstance().wait(10);
         foo.push_back(1);
-        std::cout << "Process 1:" << des::kernel::getInstance().time() << std::endl;
         co_await des::kernel::getInstance().wait(40);
-        std::cout << "Process 1:" << des::kernel::getInstance().time() << std::endl;
         foo.push_back(1);
-    },{});
+    });
 
     des::kernel::getInstance().registerProcess([&]() -> coroutine{
         co_await des::kernel::getInstance().wait(20);
-        std::cout << "Process 2:" << des::kernel::getInstance().time() << std::endl;
         foo.push_back(2);
         co_await des::kernel::getInstance().wait(20);
-        std::cout << "Process 2:" << des::kernel::getInstance().time() << std::endl;
         foo.push_back(2);
-    },{});
+    });
 
     des::kernel::getInstance().registerProcess([&]() -> coroutine{
         co_await des::kernel::getInstance().wait(30);
-        std::cout << "Process 3:" << des::kernel::getInstance().time() << std::endl;
         foo.push_back(3);
         co_await des::kernel::getInstance().wait(30);
-        std::cout << "Process 3:" << des::kernel::getInstance().time() << std::endl;
         foo.push_back(3);
-    },{});
+    });
 
     des::kernel::getInstance().startSimulation();
 
@@ -84,24 +76,47 @@ TEST(kernelTests, eventOrder2) {
     des::kernel::getInstance().registerProcess([&]() -> coroutine{
         co_await des::kernel::getInstance().wait(10);
         foo.push_back(1);
-        std::cout << "Process 1:" << des::kernel::getInstance().time() << std::endl;
         co_await des::kernel::getInstance().wait(10);
-        std::cout << "Process 1:" << des::kernel::getInstance().time() << std::endl;
         foo.push_back(1);
-    },{});
+    });
 
     des::kernel::getInstance().registerProcess([&]() -> coroutine{
         co_await des::kernel::getInstance().wait(20);
-        std::cout << "Process 2:" << des::kernel::getInstance().time() << std::endl;
         foo.push_back(2);
         co_await des::kernel::getInstance().wait(20);
-        std::cout << "Process 2:" << des::kernel::getInstance().time() << std::endl;
         foo.push_back(2);
-    },{});
+    });
 
     des::kernel::getInstance().startSimulation();
 
     ASSERT_TRUE(foo == bar || foo == bar2);
+}
+
+TEST(kernelTests, stopSimulation) {
+
+    std::vector<int> foo;
+    std::vector<int> bar = {1,2};
+
+    // 10 20
+    //  1  2
+
+    des::kernel::getInstance().registerProcess([&]() -> coroutine{
+        co_await des::kernel::getInstance().wait(10);
+        foo.push_back(1);
+        co_await des::kernel::getInstance().wait(20);
+        foo.push_back(1);
+    });
+
+    des::kernel::getInstance().registerProcess([&]() -> coroutine{
+        co_await des::kernel::getInstance().wait(20);
+        foo.push_back(2);
+        co_await des::kernel::getInstance().wait(20);
+        foo.push_back(2);
+    });
+
+    des::kernel::getInstance().startSimulation(25);
+
+    ASSERT_EQ(foo, bar);
 }
 
 TEST(kernelTests, rsLatch)
@@ -115,7 +130,6 @@ TEST(kernelTests, rsLatch)
     des::kernel::getInstance().registerProcess([&](){
         q.write(!(r.read() || n.read()));
         n.write(!(s.read() || q.read()));
-        std::cout << "PROCESS" << std::endl;
     },{&r,&s,&q,&n});
 
     // Testbench:
@@ -126,12 +140,45 @@ TEST(kernelTests, rsLatch)
         co_await des::kernel::getInstance().wait(10);
         s.write(false);
         r.write(false);
-    },{});
+        co_await des::kernel::getInstance().wait(10);
+    });
 
+    des::kernel::getInstance().vcdInit("rslatch");
     des::kernel::getInstance().startSimulation();
 
     ASSERT_EQ(q.read(), false);
     ASSERT_EQ(n.read(), true);
+}
+
+TEST(kernelTests, rsLatchFeedbackLoop)
+{
+    des::signal<bool> s("s",true);
+    des::signal<bool> r("r",false);
+    des::signal<bool> q("q",true);
+    des::signal<bool> n("n",false);
+
+    int counter = 0;
+
+    // Process:
+    des::kernel::getInstance().registerProcess([&](){
+        q.write(!(r.read() || n.read()));
+        n.write(!(s.read() || q.read()));
+        counter++;
+    },{&r,&s,&q,&n});
+
+    // Testbench:
+    des::kernel::getInstance().registerProcess([&]() -> coroutine{
+        co_await des::kernel::getInstance().wait(10);
+        s.write(true);
+        r.write(true);
+        co_await des::kernel::getInstance().wait(10);
+        s.write(false);
+        r.write(false);
+        co_await des::kernel::getInstance().wait(10);
+    });
+
+    des::kernel::getInstance().startSimulation();
+    ASSERT_EQ(counter,1003);
 }
 
 TEST(kernelTests, rsLatch2)
@@ -144,12 +191,10 @@ TEST(kernelTests, rsLatch2)
     // Process:
     des::kernel::getInstance().registerProcess([&]() {
         q.write(!(r.read() || n.read()));
-        std::cout << "PROCESS 1" << std::endl;
     },{&r,&n});
 
     des::kernel::getInstance().registerProcess([&]() {
         n.write(!(s.read() || q.read()));
-        std::cout << "PROCESS 2" << std::endl;
     },{&s,&q});
 
     // Testbench:
@@ -160,7 +205,7 @@ TEST(kernelTests, rsLatch2)
         co_await des::kernel::getInstance().wait(10);
         s.write(false);
         r.write(false);
-    },{});
+    });
 
     des::kernel::getInstance().startSimulation();
 
