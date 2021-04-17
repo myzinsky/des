@@ -18,14 +18,13 @@ class event;
 
 struct coroutine{
     struct promise {
-        coroutine get_return_object() {
+        coroutine get_return_object() noexcept {
             return std::experimental::coroutine_handle<promise>::from_promise(*this);
         }
-        std::experimental::suspend_never initial_suspend() { return {}; }
-        std::experimental::suspend_always final_suspend() { return {}; }
-        //void return_value(int value) { std::cout << "got " << value << "\n"; }
-        void return_value(int) {}
-        void unhandled_exception() {}
+        std::experimental::suspend_never initial_suspend() noexcept { return {}; }
+        std::experimental::suspend_always final_suspend() noexcept { return {}; }
+        void return_void() noexcept {}
+        void unhandled_exception() noexcept {}
     };
 
     using promise_type = promise;
@@ -43,9 +42,9 @@ public:
         return instance;
     }
 
-    void registerProcess(std::function<void()> function,
+    void registerAtomicProcess(std::function<void()> function,
                          std::vector<signalInterface*> sensitivity);
-    void registerTestbench(std::function<coroutine()> function);
+    void registerSuspendableProcess(std::function<coroutine()> function);
     void updateRequest(signalInterface *sig);
     std::experimental::suspend_always wait(u_int64_t time);
     void startSimulation();
