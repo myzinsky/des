@@ -12,7 +12,7 @@ using namespace des;
 TEST(eventQueueTests, insertIntoEventQueue)
 {
     eventQueue eq;
-    eq.insertEvent(event(123u, nullptr));
+    eq.insertEvent(event(123u));
     event e = eq.getNextEvent();
 
     ASSERT_EQ(e.timestamp, 123u);
@@ -21,10 +21,10 @@ TEST(eventQueueTests, insertIntoEventQueue)
 TEST(eventQueueTests, eventQueueSortTest)
 {
     eventQueue eq;
-    eq.insertEvent(event(100u,nullptr));
-    eq.insertEvent(event(300u,nullptr));
-    eq.insertEvent(event(100u,nullptr));
-    eq.insertEvent(event(200u,nullptr));
+    eq.insertEvent(event(100u));
+    eq.insertEvent(event(300u));
+    eq.insertEvent(event(100u));
+    eq.insertEvent(event(200u));
     event e;
     e = eq.getNextEvent();
     ASSERT_EQ(e.timestamp,100u);

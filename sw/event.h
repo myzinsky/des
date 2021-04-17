@@ -16,9 +16,8 @@ class event
 {
 public:
     event();
-    event(uint64_t timestamp, signalInterface *sig);
+    event(uint64_t timestamp);
     uint64_t timestamp;
-    signalInterface *sig;
 
     bool operator < (const event& e) const
     {
