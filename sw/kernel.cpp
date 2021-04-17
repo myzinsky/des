@@ -5,22 +5,24 @@
 
 void des::kernel::registerProcess(std::function<void ()> function, std::vector<des::signalInterface*> sensitivity)
 {
-    for(auto sig : sensitivity) {
-        lut[sig].push_back(function);
+    if(!sensitivity.empty()) {
+        for(auto sig : sensitivity) {
+            lut[sig].push_back(function);
+        }
     }
 
     processes.push_back(function);
 }
 
-void des::kernel::registerTestbench(std::function<void ()> function)
+void des::kernel::registerTestbench(std::function<coroutine ()> function)
 {
-
+    testbench = function;
 }
 
 void des::kernel::updateRequest(des::signalInterface *sig)
 {
-    des::event e(nextTime, sig); // dynamic creation and delete
-    queue.insertEvent(e);
+    updateRequests.push_back(sig);
+    updateRequests.unique();
 }
 
 void des::kernel::wait(u_int64_t time)
@@ -30,53 +32,67 @@ void des::kernel::wait(u_int64_t time)
 
 void des::kernel::startSimulation()
 {
-    std::list<des::signalInterface*> signals;
+    debugSignals("Start Simulation");
 
-    // Kickstart Processes:
+    // Initialize: Kickstart Processes
     for(auto process : processes) {
         process();
     }
+
+    coroutine tb = testbench();
+    debugSignals("Initialize");
 
     delta = 0;
 
     // Main Simulation Loop:
     while (true) {
 
-        std::cout << "Queue: " << queue.size() << std::endl;
-
-        // Stop:
-        if(queue.size() == 0) {
-            std::cout<< "End of Simulation" << std::endl;
-            break;
-        }
-
-        // Advance Time:
-        if(queue.deltaSize(simulationTime) == 0) {
-            simulationTime = queue.smallestTime();
+        if(markedProcesses.empty()) {
+            // Advance Time:
+            simulationTime = nextTime;
+            debugSignals("Advanced Time");
             delta = 0;
-        }
 
-        // Execute:
-        for(uint64_t i = 0; i < queue.deltaSize(simulationTime); i++) {
-            event e = queue.getNextEvent();
-            signals.push_back(e.sig);
-            signals.unique();
-
-            for(auto function : lut[e.sig]) {
-                function();
+            if(!tb.handle.done()) {
+                tb.handle.resume();
+            } else {
+                // Stop Simulation:
+                debugSignals("End of Simulation");
+                break;
             }
+        } else {
 
-            delta++;
-            debugSignals();
+            // Evaluate: Execute all processes which are marked for execution
+            for(auto process : markedProcesses) {
+                process();
+                delta++;
+                debugSignals("Evaluate");
+            }
+            markedProcesses.clear();
         }
 
         // Update:
-        for(auto * signal : signals) {
+        for(auto * signal : updateRequests) {
             signal->update();
+            for(auto process : lut[signal]) {
+                markedProcesses.push_back(process);
+                // TODO: markedProcesses.unique();
+            }
         }
-
-        debugSignals();
+        updateRequests.clear();
+        debugSignals("Update Done");
     }
+}
+
+void des::kernel::reset()
+{
+    simulationTime = 0;
+    nextTime = 0;
+    lut.clear();
+    updateRequests.clear();
+    processes.clear();
+    markedProcesses.clear();
+    testbench = nullptr;
 }
 
 uint64_t des::kernel::time()
@@ -84,13 +100,16 @@ uint64_t des::kernel::time()
     return simulationTime;
 }
 
-void des::kernel::debugSignals()
+void des::kernel::debugSignals(std::string msg)
 {
-    std::cout << "@" << simulationTime << "+" << delta << "\t";
-    for(auto l : lut)
-    {
-        signalInterface *sig = l.first;
-        std::cout << sig->getName() << "=" << sig->toString() << " ";
+    if(lut.size() != 0) {
+        std::cout << "@" << simulationTime << "+" << delta << "\t";
+        for(auto l : lut)
+        {
+            signalInterface *sig = l.first;
+            std::cout << sig->getName() << "=" << sig->toString() << " ";
+        }
+        std::cout << ": " << msg;
+        std::cout << std::endl;
     }
-    std::cout << std::endl;
 }

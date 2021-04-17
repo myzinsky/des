@@ -6,7 +6,7 @@ CONFIG -= app_bundle
 CONFIG += thread
 CONFIG -= qt
 
-CCFLAG += -std=c++2a -stdlib=libc++ -fcoroutines-ts
+QMAKE_CXXFLAGS += -std=c++2a -stdlib=libc++ -fcoroutines-ts
 
 HEADERS += tst_eventQueue.h
 HEADERS += tst_kernel.h
