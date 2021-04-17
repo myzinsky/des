@@ -25,9 +25,10 @@ void des::kernel::updateRequest(des::signalInterface *sig)
     updateRequests.unique();
 }
 
-void des::kernel::wait(u_int64_t time)
+std::experimental::suspend_always des::kernel::wait(u_int64_t time)
 {
     nextTime += time;
+    return std::experimental::suspend_always{};
 }
 
 void des::kernel::startSimulation()

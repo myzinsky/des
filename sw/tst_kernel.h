@@ -22,8 +22,7 @@ TEST(kernelTests, sensitivity)
 
     // Testbench:
     des::kernel::getInstance().registerTestbench([&]() -> coroutine{
-        des::kernel::getInstance().wait(10);
-        co_await std::experimental::suspend_always{};
+        co_await des::kernel::getInstance().wait(10);
         std::cout << "TB" << std::endl;
         a.write(false);
         co_return 0;
@@ -51,12 +50,10 @@ TEST(kernelTests, rsLatch)
 
     // Testbench:
     des::kernel::getInstance().registerTestbench([&]() -> coroutine{
-        des::kernel::getInstance().wait(10);
-        co_await std::experimental::suspend_always{};
+        co_await des::kernel::getInstance().wait(10);
         s.write(false);
         r.write(true);
-        des::kernel::getInstance().wait(10);
-        co_await std::experimental::suspend_always{};
+        co_await des::kernel::getInstance().wait(10);
         s.write(false);
         r.write(false);
         co_return 0;

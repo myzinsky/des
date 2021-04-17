@@ -47,7 +47,7 @@ public:
                          std::vector<signalInterface*> sensitivity);
     void registerTestbench(std::function<coroutine()> function);
     void updateRequest(signalInterface *sig);
-    void wait(u_int64_t time);
+    std::experimental::suspend_always wait(u_int64_t time);
     void startSimulation();
     void reset();
     uint64_t time();
