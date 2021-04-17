@@ -14,9 +14,9 @@ void des::kernel::registerAtomicProcess(std::function<void ()> function, std::ve
     processes.push_back(function);
 }
 
-void des::kernel::registerSuspendableProcess(std::function<coroutine ()> function)
+void des::kernel::registerSuspendableProcess(std::function<coroutine ()> function, std::vector<des::signalInterface*> sensitivity)
 {
-    testbench = function;
+    processes.push_back(function);
 }
 
 void des::kernel::updateRequest(des::signalInterface *sig)
@@ -45,7 +45,7 @@ void des::kernel::startSimulation()
         process();
     }
 
-    coroutine tb = testbench();
+    //coroutine tb = testbench();
     debugSignals("Initialize");
 
     delta = 0;
@@ -55,12 +55,14 @@ void des::kernel::startSimulation()
 
         if(markedProcesses.empty()) {
             // Advance Time:
-            simulationTime = nextTime;
-            debugSignals("Advanced Time");
-            delta = 0;
-
-            if(!tb.handle.done()) {
-                tb.handle.resume();
+            if(queue.size() != 0) {
+                event e = queue.getNextEvent();
+                simulationTime = e.timestamp;
+                delta = 0;
+                //if(!e.handle.done()) {
+                e.handle.resume();
+                //}
+                debugSignals("Advanced Time");
             } else {
                 // Stop Simulation:
                 debugSignals("End of Simulation");

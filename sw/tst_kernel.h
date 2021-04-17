@@ -25,7 +25,7 @@ TEST(kernelTests, sensitivity)
         co_await des::kernel::getInstance().wait(10);
         std::cout << "TB" << std::endl;
         a.write(false);
-    });
+    },{});
 
     des::kernel::getInstance().startSimulation();
     ASSERT_EQ(foo, 2);
@@ -53,7 +53,7 @@ TEST(kernelTests, rsLatch)
         co_await des::kernel::getInstance().wait(10);
         s.write(false);
         r.write(false);
-    });
+    },{});
 
     des::kernel::getInstance().startSimulation();
 
