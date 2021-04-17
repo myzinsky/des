@@ -5,7 +5,6 @@
 #include <functional>
 #include "descoroutine.h"
 
-
 namespace des {
 
 class signalInterface;
@@ -17,14 +16,14 @@ class event
 {
 public:
     event();
-    event(uint64_t timestamp);
-    event(uint64_t timestamp, std::experimental::coroutine_handle<> handle);
-    uint64_t timestamp;
+    event(uint64_t time);
+    event(uint64_t time, std::experimental::coroutine_handle<> handle);
+    uint64_t time;
     std::experimental::coroutine_handle<> handle;
 
     bool operator < (const event& e) const
     {
-        return (timestamp < e.timestamp);
+        return (time < e.time);
     }
 };
 

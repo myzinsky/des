@@ -27,7 +27,7 @@ des::kernel::awaitable des::kernel::wait(uint64_t time)
 
 void des::kernel::registerWait(uint64_t time, std::experimental::coroutine_handle<> handle)
 {
-    event e(time, handle);
+    event e(simulationTime+time, handle);
     queue.insertEvent(e);
 }
 
@@ -40,10 +40,7 @@ void des::kernel::startSimulation()
         process();
     }
 
-    //coroutine tb = testbench();
     debugSignals("Initialize");
-
-    delta = 0;
 
     // Main Simulation Loop:
     while (true) {
@@ -52,11 +49,9 @@ void des::kernel::startSimulation()
             // Advance Time:
             if(queue.size() != 0) {
                 event e = queue.getNextEvent();
-                simulationTime = e.timestamp;
+                simulationTime = e.time;
                 delta = 0;
-                //if(!e.handle.done()) {
-                e.handle.resume();
-                //}
+                e.handle.resume(); // if(!e.handle.done()) { ... }
                 debugSignals("Advanced Time");
             } else {
                 // Stop Simulation:
@@ -78,9 +73,9 @@ void des::kernel::startSimulation()
         // Update:
         for(auto * signal : updateRequests) {
             signal->update();
-            for(auto process : lut[signal]) {
+            for(auto &process : lut[signal]) {
                 markedProcesses.push_back(process);
-                // TODO: markedProcesses.unique();
+                //markedProcesses.unique(); // TODO?
             }
         }
         updateRequests.clear();
@@ -91,7 +86,7 @@ void des::kernel::startSimulation()
 void des::kernel::reset()
 {
     simulationTime = 0;
-    nextTime = 0;
+    delta = 0;
     lut.clear();
     updateRequests.clear();
     processes.clear();
@@ -108,7 +103,7 @@ void des::kernel::debugSignals(std::string msg)
 {
     if(lut.size() != 0) {
         std::cout << "@" << simulationTime << "+" << delta << "\t";
-        for(auto l : lut)
+        for(auto &l : lut)
         {
             signalInterface *sig = l.first;
             std::cout << sig->getName() << "=" << sig->toString() << " ";

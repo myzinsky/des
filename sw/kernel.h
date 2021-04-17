@@ -44,12 +44,11 @@ public:
 private:
     eventQueue queue;
     uint64_t simulationTime;
-    uint64_t nextTime;
     uint64_t delta;
 
     kernel (){
         simulationTime = 0;
-        nextTime = 0;
+        delta = 0;
     };
 
     void debugSignals(std::string msg);

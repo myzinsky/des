@@ -12,28 +12,28 @@ using namespace des;
 TEST(eventQueueTests, insertIntoEventQueue)
 {
     eventQueue eq;
-    eq.insertEvent(event(123u));
+    eq.insertEvent(event(123u,0));
     event e = eq.getNextEvent();
 
-    ASSERT_EQ(e.timestamp, 123u);
+    ASSERT_EQ(e.time, 123u);
 }
 
 TEST(eventQueueTests, eventQueueSortTest)
 {
     eventQueue eq;
-    eq.insertEvent(event(100u));
-    eq.insertEvent(event(300u));
-    eq.insertEvent(event(100u));
-    eq.insertEvent(event(200u));
+    eq.insertEvent(event(100u,0));
+    eq.insertEvent(event(300u,0));
+    eq.insertEvent(event(100u,0));
+    eq.insertEvent(event(200u,0));
     event e;
     e = eq.getNextEvent();
-    ASSERT_EQ(e.timestamp,100u);
+    ASSERT_EQ(e.time,100u);
     e = eq.getNextEvent();
-    ASSERT_EQ(e.timestamp,100u);
+    ASSERT_EQ(e.time,100u);
     e = eq.getNextEvent();
-    ASSERT_EQ(e.timestamp,200u);
+    ASSERT_EQ(e.time,200u);
     e = eq.getNextEvent();
-    ASSERT_EQ(e.timestamp,300);
+    ASSERT_EQ(e.time,300);
 }
 
 #endif // TST_EVENTQUEUE_H

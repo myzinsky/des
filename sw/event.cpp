@@ -2,18 +2,18 @@
 
 des::event::event()
 {
-    this->timestamp = 0;
+    this->time = 0;
     this->handle = nullptr;
 }
 
-des::event::event(uint64_t timestamp)
+des::event::event(uint64_t time)
 {
-    this->timestamp = timestamp;
+    this->time = time;
     this->handle = nullptr;
 }
 
-des::event::event(uint64_t timestamp, std::experimental::coroutine_handle<> handle)
+des::event::event(uint64_t time, std::experimental::coroutine_handle<> handle)
 {
-    this->timestamp = timestamp;
+    this->time = time;
     this->handle = handle;
 }
