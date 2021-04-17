@@ -25,11 +25,15 @@ void des::kernel::updateRequest(des::signalInterface *sig)
     updateRequests.unique();
 }
 
-std::experimental::suspend_always des::kernel::wait(u_int64_t time)
+des::kernel::awaitable des::kernel::wait(uint64_t time)
 {
-    event e(time);
+    return awaitable{time};
+}
+
+void des::kernel::registerWait(uint64_t time, std::experimental::coroutine_handle<> handle)
+{
+    event e(time, handle);
     queue.insertEvent(e);
-    return std::experimental::suspend_always{};
 }
 
 void des::kernel::startSimulation()
@@ -60,6 +64,7 @@ void des::kernel::startSimulation()
             } else {
                 // Stop Simulation:
                 debugSignals("End of Simulation");
+                reset();
                 break;
             }
         } else {

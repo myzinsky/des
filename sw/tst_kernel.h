@@ -33,8 +33,6 @@ TEST(kernelTests, sensitivity)
 
 TEST(kernelTests, rsLatch)
 {
-    des::kernel::getInstance().reset();
-
     des::signal<bool> s("s",true);
     des::signal<bool> r("r",false);
     des::signal<bool> q("q",true);

@@ -18,8 +18,9 @@ class event
 public:
     event();
     event(uint64_t timestamp);
+    event(uint64_t timestamp, std::experimental::coroutine_handle<> handle);
     uint64_t timestamp;
-    std::function<des::coroutine()> function;
+    std::experimental::coroutine_handle<> handle;
 
     bool operator < (const event& e) const
     {

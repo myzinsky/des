@@ -25,10 +25,19 @@ public:
         return instance;
     }
 
+    struct awaitable {
+        uint64_t time;
+        bool await_ready() { return false; }
+        void await_suspend(std::experimental::coroutine_handle<> handle) {
+            kernel::getInstance().registerWait(time, handle);
+        }
+        void await_resume() {}
+    };
+
     void registerAtomicProcess(std::function<void()> function, std::vector<signalInterface*> sensitivity);
     void registerSuspendableProcess(std::function<coroutine()> function);
     void updateRequest(signalInterface *sig);
-    std::experimental::suspend_always wait(u_int64_t time);
+    awaitable wait(uint64_t time);
     void startSimulation();
     void reset();
     uint64_t time();
@@ -45,6 +54,7 @@ private:
     };
 
     void debugSignals(std::string msg);
+    void registerWait(uint64_t time, std::experimental::coroutine_handle<> handle);
 
     std::map<signalInterface*, std::vector<std::function<void()>>> lut;
     std::list<des::signalInterface*> updateRequests;
