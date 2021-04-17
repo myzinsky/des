@@ -71,6 +71,39 @@ TEST(kernelTests, eventOrder) {
     ASSERT_EQ(foo, bar);
 }
 
+TEST(kernelTests, eventOrder2) {
+
+    std::vector<int> foo;
+    std::vector<int> bar  = {1,1,2,2};
+    std::vector<int> bar2 = {1,2,1,2};
+
+    // 10 20 20 40
+    //  1  2  1  2
+    //  1  1  2  1
+
+    des::kernel::getInstance().registerProcess([&]() -> coroutine{
+        co_await des::kernel::getInstance().wait(10);
+        foo.push_back(1);
+        std::cout << "Process 1:" << des::kernel::getInstance().time() << std::endl;
+        co_await des::kernel::getInstance().wait(10);
+        std::cout << "Process 1:" << des::kernel::getInstance().time() << std::endl;
+        foo.push_back(1);
+    },{});
+
+    des::kernel::getInstance().registerProcess([&]() -> coroutine{
+        co_await des::kernel::getInstance().wait(20);
+        std::cout << "Process 2:" << des::kernel::getInstance().time() << std::endl;
+        foo.push_back(2);
+        co_await des::kernel::getInstance().wait(20);
+        std::cout << "Process 2:" << des::kernel::getInstance().time() << std::endl;
+        foo.push_back(2);
+    },{});
+
+    des::kernel::getInstance().startSimulation();
+
+    ASSERT_TRUE(foo == bar || foo == bar2);
+}
+
 TEST(kernelTests, rsLatch)
 {
     des::signal<bool> s("s",true);
@@ -109,12 +142,12 @@ TEST(kernelTests, rsLatch2)
     des::signal<bool> n("n",false);
 
     // Process:
-    des::kernel::getInstance().registerProcess([&](){
+    des::kernel::getInstance().registerProcess([&]() {
         q.write(!(r.read() || n.read()));
         std::cout << "PROCESS 1" << std::endl;
     },{&r,&n});
 
-    des::kernel::getInstance().registerProcess([&](){
+    des::kernel::getInstance().registerProcess([&]() {
         n.write(!(s.read() || q.read()));
         std::cout << "PROCESS 2" << std::endl;
     },{&s,&q});
