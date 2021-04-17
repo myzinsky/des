@@ -21,15 +21,3 @@ uint64_t des::eventQueue::size()
 {
     return queue.size();
 }
-
-uint64_t des::eventQueue::deltaSize(uint64_t currentTime)
-{
-    return std::count_if(queue.begin(), queue.end(), [&](event e){
-        return e.timestamp == currentTime;
-    });
-}
-
-uint64_t des::eventQueue::smallestTime()
-{
-    return std::min_element(queue.begin(), queue.end())->timestamp;
-}

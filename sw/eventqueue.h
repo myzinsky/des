@@ -16,8 +16,6 @@ public:
     void insertEvent(event e);
     event getNextEvent();
     uint64_t size();
-    uint64_t deltaSize(uint64_t currentTime);
-    uint64_t smallestTime();
 private:
     std::vector<event> queue;
 };
