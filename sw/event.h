@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <functional>
+#include "descoroutine.h"
 
 
 namespace des {
@@ -18,6 +19,7 @@ public:
     event();
     event(uint64_t timestamp);
     uint64_t timestamp;
+    std::function<des::coroutine()> function;
 
     bool operator < (const event& e) const
     {

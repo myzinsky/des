@@ -8,7 +8,8 @@ CONFIG -= qt
 
 QMAKE_CXXFLAGS += -std=c++2a -stdlib=libc++ -fcoroutines-ts
 
-HEADERS += tst_eventQueue.h
+HEADERS += tst_eventQueue.h \
+    descoroutine.h
 HEADERS += tst_kernel.h
 HEADERS += signal.h
 HEADERS += kernel.h

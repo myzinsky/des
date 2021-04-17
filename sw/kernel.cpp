@@ -27,7 +27,8 @@ void des::kernel::updateRequest(des::signalInterface *sig)
 
 std::experimental::suspend_always des::kernel::wait(u_int64_t time)
 {
-    nextTime += time;
+    event e(time);
+    queue.insertEvent(e);
     return std::experimental::suspend_always{};
 }
 
